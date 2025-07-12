@@ -60,10 +60,6 @@
 <body>
   <h2>Tonton Video Berikut Sampai Selesai</h2>
   <div class="video-wrapper">
-    <div id="iosinfo" class="warn" style="display:none;">
-      *Di iPhone/iPad, kontrol video bawaan tidak bisa di-nonaktifkan sepenuhnya.<br>
-      Mohon jangan skip video, seluruh aktivitas akan terdeteksi sistem.
-    </div>
     <div id="seekwarn" class="warn">⚠️ Tidak boleh maju/mundur sebelum selesai!</div>
     <video id="vid" controls playsinline webkit-playsinline>
       <source src="https://res.cloudinary.com/dhnnlvllh/video/upload/v1752333541/vidio1_t3vdik.mp4" type="video/mp4">
@@ -74,14 +70,10 @@
   <button id="nextBtn" onclick="goToForm()">Lanjut ke Google Form</button>
 
   <script>
-    // iOS detection
+    // Deteksi iOS
     function isIOS() {
       return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
-    if(isIOS()) {
-      document.getElementById('iosinfo').style.display = 'block';
-    }
-
     const video = document.getElementById('vid');
     const nextBtn = document.getElementById('nextBtn');
     const seekwarn = document.getElementById('seekwarn');
@@ -89,15 +81,25 @@
     let seeking = false;
     let allowSeek = false;
 
-    // Cegah skip di browser yang support
+    // Cegah skip di browser yang support dan deteksi iOS
     video.addEventListener('timeupdate', function() {
       if (!seeking) lastTime = video.currentTime;
     });
 
     video.addEventListener('seeking', function() {
+      // Sebelum video selesai, cegah seek di semua device (termasuk iOS)
       if (!allowSeek && Math.abs(video.currentTime - lastTime) > 2) {
         seeking = true;
-        video.currentTime = lastTime;
+        // Cegah seek (khusus Chrome/Edge/Android)
+        if (!isIOS()) {
+          video.currentTime = lastTime;
+        } else {
+          // Untuk iOS, kembalikan ke posisi sebelumnya setelah sedikit delay (iOS tidak support set langsung)
+          setTimeout(function() {
+            video.currentTime = lastTime;
+          }, 50);
+        }
+        // Tampilkan peringatan setiap kali user mencoba seek
         seekwarn.style.display = 'block';
         setTimeout(() => seekwarn.style.display = 'none', 1500);
         seeking = false;
@@ -111,7 +113,7 @@
       }
     });
 
-    // Video selesai: tombol lanjut muncul, boleh replay
+    // Video selesai: tombol lanjut muncul, boleh replay/seek
     video.onended = function() {
       nextBtn.style.display = "inline-block";
       window.onbeforeunload = null;
