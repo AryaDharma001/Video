@@ -61,6 +61,7 @@
   <h2>Tonton Video Berikut Sampai Selesai</h2>
   <div class="video-wrapper">
     <div id="seekwarn" class="warn">⚠️ Tidak boleh maju/mundur sebelum selesai!</div>
+    <div id="ioswarn" class="warn">⚠️ Pada perangkat iOS, replay video tidak bisa dikunci. Mohon untuk tidak melakukan skip saat replay!</div>
     <video id="vid" controls playsinline webkit-playsinline>
       <source src="https://res.cloudinary.com/dhnnlvllh/video/upload/v1752333541/vidio1_t3vdik.mp4" type="video/mp4">
       Video tidak dapat diputar.
@@ -77,6 +78,7 @@
     const video = document.getElementById('vid');
     const nextBtn = document.getElementById('nextBtn');
     const seekwarn = document.getElementById('seekwarn');
+    const ioswarn = document.getElementById('ioswarn');
     let lastTime = 0;
     let seeking = false;
     let allowSeek = false;
@@ -94,7 +96,7 @@
         if (!isIOS()) {
           video.currentTime = lastTime;
         } else {
-          // Untuk iOS, kembalikan ke posisi sebelumnya setelah sedikit delay (iOS tidak support set langsung)
+          // Untuk iOS, kembalikan ke posisi sebelumnya setelah sedikit delay
           setTimeout(function() {
             video.currentTime = lastTime;
           }, 50);
@@ -119,6 +121,7 @@
       window.onbeforeunload = null;
       allowSeek = true; // Setelah selesai, user boleh replay dan seek
       history.pushState(null, null, location.href);
+      if(isIOS()) ioswarn.style.display = "block"; // Warning tetap di atas video setelah video selesai di iOS
     }
 
     // ANTI BACK (di halaman video)
