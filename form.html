@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Tonton Video Penelitian</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f7fa; text-align: center; padding: 40px;}
+    #nextBtn { display: none; margin-top: 28px; padding: 12px 40px; font-size: 1.13rem; border-radius: 30px; background: #6a36ff; color: white; border: none; cursor: pointer;}
+    h2 { color: #6a36ff; }
+    /* Hilangkan seek bar, tombol back/forward, dan playback speed */
+    video::-webkit-media-controls-seek-back-button,
+    video::-webkit-media-controls-seek-forward-button,
+    video::-webkit-media-controls-timeline,
+    video::-webkit-media-controls-playback-rate-button {
+      display: none !important;
+    }
+    video { outline: none; }
+    @media (max-width: 600px) {
+      video { width: 98vw; }
+      body { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <h2>Tonton Video Berikut Sampai Selesai</h2>
+<video id="vid" width="480" controls>
+  <source src="https://res.cloudinary.com/dhnnlvllh/video/upload/v1752333541/vidio1_t3vdik.mp4" type="video/mp4">
+  Video tidak dapat diputar.
+</video>
+  <br>
+  <button id="nextBtn" onclick="goToForm()">Lanjut ke Google Form</button>
+
+  <script>
+    // ----- ANTI SEEK/SKIP -----
+    const video = document.getElementById('vid');
+    const nextBtn = document.getElementById('nextBtn');
+    let lastTime = 0;
+    let seeking = false;
+
+    // Simpan waktu terakhir yang valid
+    video.addEventListener('timeupdate', function() {
+      if (!seeking) {
+        lastTime = video.currentTime;
+      }
+    });
+
+    // Cegah skip dengan seek bar
+    video.addEventListener('seeking', function() {
+      if (Math.abs(video.currentTime - lastTime) > 2) {
+        seeking = true;
+        video.currentTime = lastTime;
+        seeking = false;
+      }
+    });
+
+    // Cegah perubahan playback speed (untuk browser yang mendukung)
+    video.addEventListener('ratechange', function() {
+      if (video.playbackRate !== 1) {
+        video.playbackRate = 1;
+      }
+    });
+
+    // Tombol lanjut hanya muncul jika video selesai
+    video.onended = function() {
+      nextBtn.style.display = "inline-block";
+      window.onbeforeunload = null;
+      history.pushState(null, null, location.href);
+    }
+
+    // ANTI BACK (di halaman video)
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function(event) {
+      window.history.pushState(null, null, window.location.href);
+      alert('Anda harus menonton video sampai selesai sebelum kembali!');
+    };
+
+    window.onbeforeunload = function() {
+      return "Anda harus menonton video sampai selesai sebelum meninggalkan halaman ini!";
+    };
+
+    // Redirect ke GForm: buka di tab baru lalu tutup tab video
+    function goToForm() {
+      window.open("https://docs.google.com/forms/d/e/1FAIpQLSe8qB8SqK6npqJEp_04z78sFhFvBKGDRGwEVdHPJy_nLbykng/viewform?usp=dialog", '_blank');
+      window.close();
+    }
+  </script>
+</body>
+</html>
